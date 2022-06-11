@@ -5,29 +5,44 @@ import Product from "../components/Product";
 import { listProducts } from "../actions/productActions";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
+import { useParams, Link } from "react-router-dom";
+import Paginate from "../components/Paginate";
+import ProductCarousel from "../components/ProductCarousel";
+import Meta from "../components/Meta";
 
 const HomeScreen = () => {
+  const params = useParams();
+  const keyword = params.keyword;
+  const pageNumber = params.pageNumber || 1;
   const dispatch = useDispatch();
   const productList = useSelector((state) => state.productList);
-  const { loading, error, products } = productList;
+  const { loading, error, products, page, pages } = productList;
   useEffect(() => {
-    dispatch(listProducts());
+    dispatch(listProducts(keyword, pageNumber));
     // const fetchProducts = async () => {
     //   const { data } = await axios.get("/api/products");
     //   setProducts(data);
     // };
     // fetchProducts();
-  }, [dispatch]);
+  }, [dispatch, keyword, pageNumber]);
 
   return (
     <>
-      <div>
-        <h1>Latest Products</h1>
-        {loading ? (
-          <Loader />
-        ) : error ? (
-          <Message variant="danger">{error}</Message>
-        ) : (
+      <Meta />
+      {!keyword ? (
+        <ProductCarousel />
+      ) : (
+        <Link to="/" className="btn btn-light">
+          Go Back
+        </Link>
+      )}
+      <h1>Latest Products</h1>
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <Message variant="danger">{error}</Message>
+      ) : (
+        <>
           <Row>
             {products.map((product) => {
               return (
@@ -38,8 +53,13 @@ const HomeScreen = () => {
               );
             })}
           </Row>
-        )}
-      </div>
+          <Paginate
+            page={page}
+            pages={pages}
+            keyword={keyword ? keyword : ""}
+          />
+        </>
+      )}
     </>
   );
 };
